@@ -4,40 +4,7 @@ from matplotlib import cm
 import mayavi.mlab as ma
 from position import Angle, Position
 import glob
-
-class Ascfile():
-    def __init__(self,path):
-        self.path=path
-        self.read_info()
-    def read_info(self):
-        file = open(self.path)
-        #Header
-        self.M = int(file.readline()[13:])  # nb colonnes
-        self.N = int(file.readline()[13:])  # nb lignes
-        self.xmin = float(file.readline()[13:])  # en m
-        self.ymax = float(file.readline()[13:])  # en m
-        self.cellsize = float(file.readline()[13:])  # pas des données
-        self.xmax = self.xmin+self.M*self.cellsize
-        self.ymin = self.ymax-self.N*self.cellsize
-        file.readline()
-        file.close()
-    def get_data(self):
-        """Lit les altitudes et renvoie un array contenant les altitudes"""
-        file = open(self.path)
-        #Header
-        for i in range(6):
-            file.readline()
-        #tableau des altitudes
-        alti = -1000*np.ones((self.N, self.M))
-        i = 0  # la ligne
-        for line in file:
-            line = line[1:]
-            liste = line.split(' ')
-            for j in range(len(liste)):  # la colonne
-                alti[i][j] = float(liste[j])
-            i += 1
-        file.close()
-        return alti
+from ascfile import Ascfile
 
 
 class JeuDeDonnees():
@@ -55,10 +22,10 @@ class JeuDeDonnees():
         print(same)
 
 class Zone():
-    def __init__(self, position=Position(45,5), deltax=1, deltay=1):
+    def __init__(self, dataset,position=(45,5), deltax=1, deltay=1):
         """Définit une zone d'étude centrée sur position (type Position)
         et de taille deltax par deltay (en m)"""
-        self.position = position
+        self.position = Position(position)
         self.center = position.get_xy()
         self.deltax = deltax
         self.deltay = deltay
@@ -68,6 +35,7 @@ class Zone():
         self.xmax = xcenter+0.5*deltax
         self.ymin = ycenter-0.5*deltay
         self.ymax = ycenter+0.5*deltay
+        self.dataset= dataset
     def set_rectangle(self, xmin, xmax, ymin, ymax):
         self.xmin = xmin
         self.xmax = xmax
@@ -76,6 +44,10 @@ class Zone():
         self.center = 0.5*(xmin+xmax), 0.5*(ymin+ymax)
         self.deltax = xmax-xmin
         self.deltay = ymax-ymin
+    def set_dataset(self,dataset):
+        """Associe un jeu de données dataset à la zone (dataset de type JeuDeDonnees)
+        Nécessaire si on veut extraire les données de la zone"""
+        self.dataset=dataset
     def get_rectangle(self):
         """Renvoie le rectangle de la zone dans un tuple
         ordre: xmin, xmax, ymin, ymax"""
@@ -106,27 +78,6 @@ class Terrain():
         self.xmax = self.xmin+self.M*self.cellsize
         self.ymin = self.ymax-self.N*self.cellsize
         self.array = file.get_data()
-        # file = open(path)
-        # #Header
-        # self.M = int(file.readline()[13:])  # nb colonnes
-        # self.N = int(file.readline()[13:])  # nb lignes
-        # self.xmin = float(file.readline()[13:])  # en m
-        # self.ymax = float(file.readline()[13:])  # en m
-        # self.cellsize = float(file.readline()[13:])  # pas des données
-        # self.xmax = self.xmin+self.M*self.cellsize
-        # self.ymin = self.ymax-self.N*self.cellsize
-        # file.readline()
-        # #tableau des altitudes
-        # alti = -1000*np.ones((self.N, self.M))
-        # i = 0  # la ligne
-        # for line in file:
-        #     line = line[1:]
-        #     liste = line.split(' ')
-        #     for j in range(len(liste)):  # la colonne
-        #         alti[i][j] = float(liste[j])
-        #     i += 1
-        # file.close()
-        # self.array = alti
 
     def plot(self, show=True):
         fig = plt.figure()
