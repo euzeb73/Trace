@@ -1,28 +1,32 @@
+from distutils import filelist
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import mayavi.mlab as ma
 from position import Angle, Position
 import glob
-from ascfile import Ascfile
 
 
 class JeuDeDonnees():
     def __init__(self, dir):
         """dir est le chemin d'accès au répertoire contenant les fichiers des donnees"""
         self.dir=dir
-        filelist=glob.glob("{}/*.asc".format(self.dir))
-        self.filelist=[Ascfile(file) for file in filelist]
+        self.filelist=glob.glob("{}/*.asc".format(self.dir))
+        self.terrainlist=[]
+        for file in filelist:
+            terrain=Terrain()
+            terrain.loadasc(file,onlyinfo = True)
+            self.terrainlist.append(terrain)
     def scrap_data(self):
         same=True
-        cellsize=self.filelist[0].cellsize
-        for file in self.filelist:
-            if file.cellsize != cellsize:
+        cellsize=self.terrainlist[0].cellsize
+        for terrain in self.terrainlist:
+            if terrain.cellsize != cellsize:
                 same=False
         print(same)
 
 class Zone():
-    def __init__(self, dataset,position=(45,5), deltax=1, deltay=1):
+    def __init__(self, dataset:JeuDeDonnees,position=(45,5), deltax=1, deltay=1):
         """Définit une zone d'étude centrée sur position (type Position)
         et de taille deltax par deltay (en m)"""
         self.position = Position(position)
@@ -68,16 +72,49 @@ class Terrain():
         self.ymax = 100
         self.cellsize = 1
 
-    def loadasc(self, path):
-        file=Ascfile(path)
-        self.M = file.M  # nb colonnes
-        self.N = file.N  # nb lignes
-        self.xmin = file.xmin  # en m
-        self.ymax = file.ymax  # en m
-        self.cellsize = file.cellsize  # pas des données
+    def loadasc(self, path,onlyinfo=False):
+        file = open(path)
+        #Header
+        self.M = int(file.readline()[13:])  # nb colonnes
+        self.N = int(file.readline()[13:])  # nb lignes
+        self.xmin = float(file.readline()[13:])  # en m
+        self.ymin = float(file.readline()[13:])  # en m
+        self.cellsize = float(file.readline()[13:])  # pas des données
         self.xmax = self.xmin+self.M*self.cellsize
-        self.ymin = self.ymax-self.N*self.cellsize
-        self.array = file.get_data()
+        self.ymax = self.ymin+self.N*self.cellsize
+        file.readline()
+        if not onlyinfo:
+            #tableau des altitudes
+            alti = -1000*np.ones((self.N, self.M))
+            i = 0  # la ligne
+            for line in file:
+                line = line[1:]
+                liste = line.split(' ')
+                for j in range(len(liste)):  # la colonne
+                    alti[i][j] = float(liste[j])
+                i += 1
+            file.close()
+            self.array = alti
+            
+    def writeasc(self, path='./newasc.asc'):
+        """
+        fabrique un fichier asc avec chemin d'accès path à partir des attributs
+        self.array doit contenit le tableau des altitudes à écrire.
+        """
+        header='ncols'+8*' '+str(self.M)+'\n'
+        header=header+'nrows'+8*' '+str(self.N)+'\n'
+        header=header+'xllcorner'+4*' '+'{:f}'.format(self.xmin)+'\n'
+        header=header+'yllcorner'+4*' '+'{:f}'.format(self.ymin)+'\n'
+        header=header+'cellsize'+5*' '+'{:f}'.format(self.cellsize)+'\n'
+        header=header+'NODATA_value  -99999.00\n'
+        fich=open(path,'w')
+        fich.write(header)
+        for i in range(self.N): #lignes
+            for j in range(self.M):
+                fich.write(' {:.2f}'.format(self.array[i][j]))
+            fich.write('\n')
+        fich.close()
+
 
     def plot(self, show=True):
         fig = plt.figure()

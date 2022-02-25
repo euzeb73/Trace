@@ -47,7 +47,7 @@ class Position():
                   (1+self.e*sin(phi1.rad)))**(self.e/2))**self.n
         self.rhode0 = terme1*terme2
 
-    def rho(self, phi):
+    def rho(self, phi:Angle):
         rhodephi = self.rhode0*((1+self.e*sin(phi.rad))/(1-self.e*sin(phi.rad))
                                 )**(self.n*self.e/2)/(tan(phi.rad/2+pi/4))**self.n
         return rhodephi
