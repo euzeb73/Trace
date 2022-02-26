@@ -4,8 +4,8 @@ import numpy as np
 
 class Angle():
     def __init__(self, angle):
-        self.rad = angle*pi/180
-        self.deg = angle
+        self.rad : float = angle*pi/180
+        self.deg :float = angle
 
     def __add__(self, other):
         return Angle(self.deg+other.deg)
@@ -27,8 +27,8 @@ class Position():
     def __init__(self, lat, lon):
         """ lat et lon sont les latitude et longitude en DEGRES
         """
-        self.lat = Angle(lat)  # latitude
-        self.lon = Angle(lon)  # longitude
+        self.lat : Angle = Angle(lat)  # latitude
+        self.lon : Angle = Angle(lon)  # longitude
         # Caracteristiques de la Terre https://fr.wikipedia.org/wiki/Terre (rayon)
         a = 6378.137e3
         b = 6356.752e3
@@ -52,7 +52,7 @@ class Position():
                                 )**(self.n*self.e/2)/(tan(phi.rad/2+pi/4))**self.n
         return rhodephi
 
-    def get_xy(self):
+    def get_xy(self) :
         """ Renvoie la position en coordonnées cartésiennes selon la projection
         de Lambert 93 (RGF 93)
         https://fr.wikipedia.org/wiki/Projection_conique_conforme_de_Lambert#Projections_officielles_en_France_m%C3%A9tropolitaine
