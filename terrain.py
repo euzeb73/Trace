@@ -11,7 +11,7 @@ class Terrain():
         """ Classe Terrain pour contenir des tableaux d'altitude en fonction de x et y
         à construire à partir de Terrain.loadasc"""
         self.array: np.ndarray = np.array(tableau)
-        #Valeurs arbitraires
+        # Valeurs arbitraires
         self.N, self.M = self.array.shape
         self.xmin = -100
         self.xmax = 100
@@ -20,9 +20,9 @@ class Terrain():
         self.cellsize = 1
 
     def loadasc(self, path, onlyinfo=False):
-        self.path=path
+        self.path = path
         file = open(path)
-        #Header
+        # Header
         self.M = int(file.readline()[13:])  # nb colonnes
         self.N = int(file.readline()[13:])  # nb lignes
         self.xmin = float(file.readline()[13:])  # en m
@@ -32,7 +32,7 @@ class Terrain():
         self.ymax = self.ymin+self.N*self.cellsize
         file.readline()
         if not onlyinfo:
-            #tableau des altitudes
+            # tableau des altitudes
             alti = -1000*np.ones((self.N, self.M))
             i = 0  # la ligne
             for line in file:
@@ -84,11 +84,12 @@ class Terrain():
         X = X.transpose()  # là y'a transposition d'après le manuel.
         Y = Y.transpose()
         fig = ma.figure()
-        tabalti=np.flip(self.array.transpose(),1)*Zfactor #pour que ça colle transposition+renversement des 2 axes
+        # pour que ça colle transposition+renversement des 2 axes
+        tabalti = np.flip(self.array.transpose(), 1)*Zfactor
         ma.surf(X, Y, tabalti, colormap='gist_earth')
         if show:
             ma.show()
-        return fig
+        return fig, Zfactor
 
     def xtoj(self, x):
         """Renvoie la coordonnée j (colonne) correspondant à la position x
@@ -101,18 +102,34 @@ class Terrain():
         (arrondi avec round)"""
         assert self.ymin <= y <= self.ymax
         return int(round((self.ymax-y)/self.cellsize))
-    
-    def xytoij(self,x,y):
-        return self.ytoi(y),self.xtoj(x)
 
-    def xyton(self,x,y):
-        """Renvoie la coordonnée n=i*N+j correspondant à la position x,y"""
-        i,j=self.xytoij(x,y)
-        return i*self.N+j
+    def xytoij(self, x, y):
+        return self.ytoi(y), self.xtoj(x)
+
+    def ijton(self,i,j):
+        return i*self.M+j
     
-    def ntoij(self,n):
-        """renvoie les coordonnées i,j correspondant à n=i*N+j"""
-        return n//self.N,n%self.N
+    def xyton(self, x, y):
+        """Renvoie la coordonnée n=i*M+j correspondant à la position x,y"""
+        i, j = self.xytoij(x, y)
+        return self.ijton(i,j)
+
+    def ntoij(self, n):
+        """renvoie les coordonnées i,j correspondant à n=i*M+j"""
+        return n//self.M, n % self.M
+
+    def ijtoxy(self, i, j):
+        """renvoie les coordonnées géographiques quand on donne les indices du tableau
+        tuple x,y"""
+        x = j*self.cellsize+self.xmin
+        y = self.ymax-i*self.cellsize
+        return x, y
+
+    def altipointxy(self,x,y):
+        """renvoie l'altitude du point de coordonnées x,y"""
+        assert self.xmin<=x<=self.xmax and self.ymin<=y<=self.ymax #dans le terrain
+        i,j=self.xytoij(x,y)
+        return self.array[i,j]
 
     def isinTerrain(self, x, y):
         return self.xmin <= x <= self.xmax and self.ymin <= y <= self.ymax
@@ -126,13 +143,13 @@ class Terrain():
         jmax = self.xtoj(xmax)
         imin = self.ytoi(ymax)  # coin en haut (ymax)
         imax = self.ytoi(ymin)  # coin en bas (ymin)
-        self.array = self.array[imin:imax+1,jmin:jmax+1]
+        self.array = self.array[imin:imax+1, jmin:jmax+1]
         self.N, self.M = self.array.shape
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
-        self.cropwarning = True #le path ne veut plus dire grand chose par exemple
+        self.cropwarning = True  # le path ne veut plus dire grand chose par exemple
 
     def concatenate(self, other, bordure='verticale'):
         """concatene 2 terrains le long de leur bordure: 'verticale' ou 'horizontale'
@@ -166,8 +183,7 @@ class Terrain():
     def copy(self):
         """Renvoie une copy du terrain
         """
-        copie=Terrain()
-        copie.__dict__=self.__dict__
-        copie.array=self.array.copy()
+        copie = Terrain()
+        copie.__dict__ = self.__dict__
+        copie.array = self.array.copy()
         return copie
-
