@@ -4,8 +4,8 @@ import numpy as np
 
 class Angle():
     def __init__(self, angle):
-        self.rad : float = angle*pi/180
-        self.deg :float = angle
+        self.rad: float = angle*pi/180
+        self.deg: float = angle
 
     def __add__(self, other):
         return Angle(self.deg+other.deg)
@@ -27,8 +27,8 @@ class Position():
     def __init__(self, lat, lon):
         """ lat et lon sont les latitude et longitude en DEGRES
         """
-        self.lat : Angle = Angle(lat)  # latitude
-        self.lon : Angle = Angle(lon)  # longitude
+        self.lat: Angle = Angle(lat)  # latitude
+        self.lon: Angle = Angle(lon)  # longitude
         # Caracteristiques de la Terre https://fr.wikipedia.org/wiki/Terre (rayon)
         a = 6378.137e3
         b = 6356.752e3
@@ -44,15 +44,15 @@ class Position():
         self.n = numerateur/denominateur
         terme1 = a*cos(phi1.rad)/(self.n*sqrt(1-(self.e*sin(phi1.rad))**2))
         terme2 = (tan(phi1.rad/2+pi/4)*((1-self.e*sin(phi1.rad)) /
-                  (1+self.e*sin(phi1.rad)))**(self.e/2))**self.n
+                                        (1+self.e*sin(phi1.rad)))**(self.e/2))**self.n
         self.rhode0 = terme1*terme2
 
-    def rho(self, phi:Angle):
+    def rho(self, phi: Angle):
         rhodephi = self.rhode0*((1+self.e*sin(phi.rad))/(1-self.e*sin(phi.rad))
                                 )**(self.n*self.e/2)/(tan(phi.rad/2+pi/4))**self.n
         return rhodephi
 
-    def get_xy(self) :
+    def get_xy(self):
         """ Renvoie la position en coordonnées cartésiennes selon la projection
         de Lambert 93 (RGF 93)
         https://fr.wikipedia.org/wiki/Projection_conique_conforme_de_Lambert#Projections_officielles_en_France_m%C3%A9tropolitaine

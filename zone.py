@@ -32,7 +32,7 @@ class Zone():
         ordre: xmin, xmax, ymin, ymax"""
         return self.xmin, self.xmax, self.ymin, self.ymax
 
-    def generate_terrain(self, dataset: JeuDeDonnees) -> Terrain:
+    def generate_terrain(self, dataset: JeuDeDonnees)  -> Terrain:
         """Renvoie un Terrain construit à partir de la zone définie par le rectangle
         en prenant les données dans dataset
         La zone peut recouvrir plusieurs tuiles ou être à l'intérieur d'une seule tuile
@@ -44,7 +44,7 @@ class Zone():
         # Peut etre ecrire une méthode de JeuDeDonnees is indataset(x,y)
         #                  TODO
 
-        liste_terrains = []  # les terrains pris vont ici
+        liste_terrains : list[Terrain] = []  # les terrains pris vont ici
         for terrain in dataset.tuiles:
             bordsup = terrain.ymin <= self.ymax <= terrain.ymax  # bord sup zone intersect tuile
             bordinf = terrain.ymin <= self.ymin <= terrain.ymax  # bord inf zone intersect tuile
@@ -130,10 +130,10 @@ class Zone():
             liste_lignes.append(terrain_ligne)
         # On va maintenant fusionner les lignes pour former le terrain final:
         if len(liste_lignes)>=2: #il faut au moins 2 lignes pour fusionner
-            terrain_final = liste_lignes[0]
+            terrain_final : Terrain = liste_lignes[0]
             for i in range(1, len(liste_lignes)):
                 terrain = liste_lignes[i]
-                terrain_final=terrain_final.concatenate(terrain, bordure='horizontale')
+                terrain_final : Terrain =terrain_final.concatenate(terrain, bordure='horizontale')
         else: 
             terrain_final=terrain_ligne
         return terrain_final

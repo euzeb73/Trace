@@ -2,9 +2,10 @@ from terrain import Terrain
 from queue import PriorityQueue
 import numpy as np
 import mayavi.mlab as ma
+from math import tan
 
 class Traces():
-    def __init__(self,terrain : Terrain, points : list, largeurs : list):
+    def __init__(self,terrain : Terrain, points : list, largeurs : list=[]):
         """ Trace attachée à terrain 
         points est une liste de (x,y) d'au moins 2 points (départ arrivée)
         largeurs est une liste de floats largeurs de longueur len(points)-1 qui représente
@@ -23,6 +24,7 @@ class Traces():
         # et dans le calculateur une méthode .generate_path qui renvoie un chemin
         # dans le calculateur, il faudrait tenir compte des largeurs avec une méthode qui 
         # élimine les points hors de ces largeurs (genr en les mettant float('inf') de le terrain
+        test=5
         if methode=='dijkstra_fast':
             # calculateur=Dijkstra()
             pass
@@ -67,7 +69,14 @@ class Traces():
         for voisin in vois:
             ivois,jvois=self.terrain.ntoij(voisin)
             cout=max(graph[ivois][jvois]-graph[i][j],0) #0 si plat ou descente, le deniv sinon
-            penalitedistance=25
+            
+            # Pénaliser les grandes pentes
+            # TODO à mettre en paramètre
+            pentemax=15
+            if cout>=tan(pentemax*3.14/180):
+                cout=cout*10
+            
+            penalitedistance=1
             cout=self.ImportanceDeniv*cout+penalitedistance
             voiscouts.append([voisin,cout])
         return voiscouts
@@ -133,6 +142,6 @@ class Traces():
         x,y,z=self.tracexyz
         zplot=Zfactor*z.copy()
         ma.figure(figure)
-        ma.plot3d(x, y, zplot, tube_radius=5,color=(1,0,1))
+        ma.plot3d(x, y, zplot, tube_radius=1,color=(1,0,1))
         ma.show()
 
