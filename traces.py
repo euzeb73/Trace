@@ -2,7 +2,9 @@ from terrain import Terrain
 from queue import PriorityQueue
 import numpy as np
 import mayavi.mlab as ma
-from math import tan
+from math import tan,sqrt
+
+RACINEDEDEUX=sqrt(2)
 
 class Traces():
     def __init__(self,terrain : Terrain, points : list, largeurs : list=[]):
@@ -50,24 +52,32 @@ class Traces():
                               np.concatenate(oldz,y)
 
     def voisins(self,n):
-        """ Renvoie une liste des voisins de i,j avec les couts de déplacement
-        donnés par graph. Format [[voisin1,cout1],[voisin2,cout2],...] """
-        graph=self.terrain.array
+        """renvoie une liste des voisins de n
+        format liste de tuples (i,j)"""
         i,j=self.terrain.ntoij(n)
         N=self.terrain.N
         M=self.terrain.M
         vois=[]
-        if i+1<=N-1:
-            vois.append(self.terrain.ijton(i+1,j))
-        if i-1>=0:
-            vois.append(self.terrain.ijton(i-1,j))
-        if j+1<=M-1:
-            vois.append(self.terrain.ijton(i,j+1))
-        if j-1>=0:
-            vois.append(self.terrain.ijton(i,j-1))
+        for deltai in [-1,0,1]: #les voisins diagonales comprises
+            for deltaj in [-1,0,1]:
+                ipastropgrand = i+deltai<=N-1
+                ipastroppetit = i+deltai>=0
+                jpastropgrand = j+deltaj<=M-1
+                jpastroppetit = j+deltaj>=0
+                idiffj = i!=j
+                if ipastropgrand and ipastroppetit and jpastropgrand and jpastroppetit and idiffj:
+                    vois.append((i+deltai,j+deltaj))
+        return vois
+        
+    def voisins_couts(self,n):
+        """ Renvoie une liste des voisins de i,j avec les couts de déplacement
+        donnés par graph. Format [[voisin1,cout1],[voisin2,cout2],...] """
+        graph=self.terrain.array
+        i,j=self.terrain.ntoij(n)
+        vois=self.voisins(n)
         voiscouts=[]
         for voisin in vois:
-            ivois,jvois=self.terrain.ntoij(voisin)
+            ivois,jvois=voisin
             cout=max(graph[ivois][jvois]-graph[i][j],0) #0 si plat ou descente, le deniv sinon
             
             # Pénaliser les grandes pentes
@@ -75,10 +85,12 @@ class Traces():
             pentemax=15
             if cout>=tan(pentemax*3.14/180):
                 cout=cout*10
-            
-            penalitedistance=1
+            if abs(i-ivois)+abs(j-jvois)==1:
+                penalitedistance=self.terrain.cellsize
+            else:
+                penalitedistance=self.terrain.cellsize*RACINEDEDEUX
             cout=self.ImportanceDeniv*cout+penalitedistance
-            voiscouts.append([voisin,cout])
+            voiscouts.append([self.terrain.ijton(*voisin),cout])
         return voiscouts
 
     def dijkstra_fast(self,sommet_start,sommet_stop):
@@ -98,7 +110,7 @@ class Traces():
         while table_dists[sommet_stop]==float('inf'):
             dist_sommet,sommet=attente.get() #on récupère le sommet qui est prioritaire dans la file
             if table_dists[sommet]==float('inf'): #Si le sommet n'a jamais été visité (normalement ne doit pas arriver mais à cause de la non suppression de la file ça arrive)
-                for voisin,dist in self.voisins(sommet): 
+                for voisin,dist in self.voisins_couts(sommet): 
                     if table_dists[voisin]==float('inf'):#Si on n'a pas encore visité le voisin
                         if voisin not in attenteval.keys(): #Voisin pas encore en attente de visite
                             attenteval[voisin]=dist_sommet+dist #on donne la valeur
@@ -122,7 +134,7 @@ class Traces():
         return chemin,visite,table_dists[sommet_stop]
     
     def path_to_xyz(self,chemin):
-        """self.tracexyz 3 listes contenant les coordonnées x,y et z de chaque poitn du chemin
+        """self.tracexyz 3 listes contenant les coordonnées x,y et z de chaque poinnt du chemin
         point indice i de chemin(liste de points sur le array) de coordonnées x[i],  y[i] , z[i]"""
         xchem=[]
         ychem=[]
@@ -142,6 +154,9 @@ class Traces():
         x,y,z=self.tracexyz
         zplot=Zfactor*z.copy()
         ma.figure(figure)
-        ma.plot3d(x, y, zplot, tube_radius=1,color=(1,0,1))
+        ma.plot3d(x, y, zplot, tube_radius=1,color=(1,0,1),figure=figure)
+        ma.text3d(x[0],y[0],zplot[0]+Zfactor*10,'Depart',figure=figure,scale=(20,20,20),color=(1,0,0))
+        fin=len(x)-1
+        ma.text3d(x[fin],y[fin],zplot[fin]+Zfactor*10,'Arrivee',figure=figure,scale=(20,20,20),color=(1,0,0))
         ma.show()
 
