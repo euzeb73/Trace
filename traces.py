@@ -15,8 +15,59 @@ class Traces():
         les 2 droites parallèles à -largeur[i]/2 et + largeur[i]/2"""
         self.terrain = terrain
         self.points = points
-        self.largeurs = largeurs #Pas encore implémenté
+        if largeurs == [] :
+            self.largeurs=[250 for i in range(len(self.points)-1)]    #par défaut 250 m de large
+        else:
+            self.largeurs = largeurs
+        assert len(self.largeurs)==len(self.points)-1 
+        self.generate_rects()
         self.ImportanceDeniv=10
+
+    def generate_rects(self):
+        """calcule les rectangles d'évolution de la trace
+        il y en a len(self.points) -1 = len(largeurs)
+        le self.rects[i] a la largeur self.largeur[i] et contient self.points[i] et self.points[i+1]
+        le rectangle est donné par 3 de ses points A,B,D. C (non donné est tel que vec AC=vec AB+vec AD)
+        TODO ? une classe rectangle ?
+        """
+        self.rects = []
+        for i in range(len(self.points)-1):
+            largeur=self.largeurs[i]
+            I=np.array(self.points[i]) #les milieux des côtés
+            J=np.array(self.points[i+1])
+            vecIJ=J-I
+            IJ=np.linalg.norm(vecIJ)
+            normalIJ=np.array((vecIJ[1],-vecIJ[0]))
+            vecIA=0.5*largeur*normalIJ/IJ
+            A=I+vecIA #vecteurs: OA=OI+IA
+            B=I-vecIA #vecteurs: OB=OI-IA
+            D=A+(IJ+self.terrain.cellsize)*vecIJ/IJ #vecteurs: OD=OA+IJ On ajoute une cellule dans cette direction pour avoir le point d'arrivée même avec les arrondis
+            self.rects.append((A,B,D))
+    # def bigger_rects(self):
+    #     """ Fonction pour agrandir un peu les rectangles et ne pas avoir de probleme d'arrondi
+    #      qui exclue le pt d'arrivée du rectangle"""
+    #     for rect in self.rects:
+
+
+    def isinrect(self,x,y,rect):
+        """Retourne True si le points x,y est dans rect défini par les coordonnées de A,B et D
+        False sinon"""
+        A,B,D=rect
+        M=np.array((x,y))
+        vecAM=M-A
+        vecAB=B-A
+        AB=np.linalg.norm(vecAB)
+        vecAD=D-A
+        AD=np.linalg.norm(vecAD)
+        return 0<=vecAM.dot(vecAB)<=AB**2 and 0<=vecAM.dot(vecAD)<=AD**2
+
+    def ijisinrect(self,i,j,rect):
+        """Retourne True si le points i,j est dans rect défini par les coordonnées de A,B et D
+        False sinon"""
+        x,y=self.terrain.ijtoxy(i,j)
+        return self.isinrect(x,y,rect)
+
+
 
     def calculate_trace(self,methode='dijkstra_fast'):
         #Dans l'idée: calculer le chemin entre chaque points de la liste self.points
@@ -40,6 +91,7 @@ class Traces():
         for i in range(len(self.points)-1):
             depart=self.terrain.xyton(*self.points[i])
             arrivee=self.terrain.xyton(*self.points[i+1])
+            self.current_rec=self.rects[i]
             chemin=self.dijkstra_fast(depart,arrivee)[0]
             x,y,z=self.path_to_xyz(chemin)
             if i==0:
@@ -47,9 +99,9 @@ class Traces():
             else:
                 debuttrace=self.tracexyz
                 oldx,oldy,oldz=debuttrace
-                self.tracexyz=np.concatenate(oldx,x),\
-                              np.concatenate(oldy,y),\
-                              np.concatenate(oldz,y)
+                self.tracexyz=np.concatenate((oldx,x)),\
+                              np.concatenate((oldy,y)),\
+                              np.concatenate((oldz,z))
 
     def voisins(self,n):
         """renvoie une liste des voisins de n
@@ -64,8 +116,9 @@ class Traces():
                 ipastroppetit = i+deltai>=0
                 jpastropgrand = j+deltaj<=M-1
                 jpastroppetit = j+deltaj>=0
-                idiffj = i!=j
-                if ipastropgrand and ipastroppetit and jpastropgrand and jpastroppetit and idiffj:
+                pas0 = deltai!=0 or deltaj!=0 #pour enlever 0,0
+                dansrec=self.ijisinrect(i+deltai,j+deltaj,self.current_rec) #Si le voisin est dans l'espace sélectionné
+                if ipastropgrand and ipastroppetit and jpastropgrand and jpastroppetit and pas0 and dansrec:
                     vois.append((i+deltai,j+deltaj))
         return vois
         
@@ -160,3 +213,4 @@ class Traces():
         ma.text3d(x[fin],y[fin],zplot[fin]+Zfactor*10,'Arrivee',figure=figure,scale=(20,20,20),color=(1,0,0))
         ma.show()
 
+    #TODO AJOUTER une visu de Trace en 2D avc points et rectangles.

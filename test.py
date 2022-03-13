@@ -1,4 +1,3 @@
-import imp
 from position import Angle,Position
 from terrain import Terrain
 from dataset import JeuDeDonnees
@@ -54,9 +53,15 @@ print('Terrain construit à partir des cartes en {:.4f} s'.format((t2-t1)))
 sortie_foret=Position(45.521279 , 6.77825).get_xy()
 sommet_bosse=Position(45.518665 , 6.76557).get_xy()
 fin_descente=Position(45.524455 , 6.762408).get_xy()
-col_bosse=Position(45.52033 , 6.768147).get_xy()
+col_bosse=Position(45.521172 , 6.765767).get_xy()
+replat_chamois=Position(45.521462 , 6.772941).get_xy()
+avant_pleinest=Position(45.519639 , 6.773636).get_xy()
 
-trace=Traces(carte,[sortie_foret,sommet_bosse],[])
+
+# trace=Traces(carte,[sortie_foret,replat_chamois,sommet_bosse],[])
+# trace=Traces(carte,[sortie_foret,sommet_bosse],[25])
+trace=Traces(carte,[sortie_foret,avant_pleinest,replat_chamois,sommet_bosse],[100,50,200])
+# trace=Traces(carte,[fin_descente,col_bosse],[])
 t1=time.perf_counter()
 trace.calculate_trace()
 t2=time.perf_counter()

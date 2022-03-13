@@ -2,7 +2,6 @@ from terrain import Terrain
 import glob
 
 
-
 class JeuDeDonnees():
     def __init__(self, dir):
         """dir est le chemin d'accès au répertoire contenant les fichiers des donnees"""
@@ -42,56 +41,43 @@ class JeuDeDonnees():
         #                     jmini = j
         #         liste[jmini], liste[i] = liste[i], liste[jmini]
         #     return liste
-        def fusion(liste1,liste2,attribut,croissant):
+        def fusion(liste1, liste2, attribut, croissant):
             """fusionne liste1 et liste2 qui sont triées selon attribut par ordre
             croissant si croissant==True  decroissant sinon"""
-            N1=len(liste1)
-            N2=len(liste2)
-            k1,k2=0,0 #indices dans liste1 et liste2
-            liste_fus=[]
-            while k1<N1 and k2<N2:
-                elm1=liste1[k1].__dict__[attribut]
-                elm2=liste2[k2].__dict__[attribut]
-                if (elm1>elm2 and croissant) or (elm1<=elm2 and not(croissant)):
+            N1 = len(liste1)
+            N2 = len(liste2)
+            k1, k2 = 0, 0  # indices dans liste1 et liste2
+            liste_fus = []
+            while k1 < N1 and k2 < N2:
+                elm1 = liste1[k1].__dict__[attribut]
+                elm2 = liste2[k2].__dict__[attribut]
+                if (elm1 > elm2 and croissant) or (elm1 <= elm2 and not(croissant)):
                     liste_fus.append(liste2[k2])
-                    k2+=1
+                    k2 += 1
                 else:
                     liste_fus.append(liste1[k1])
-                    k1+=1
-            if k2>=N2: #on est allé au bout de liste2 en premier
-                liste_fus=liste_fus+liste1[k1:] #on ajoute la fin de liste1
+                    k1 += 1
+            if k2 >= N2:  # on est allé au bout de liste2 en premier
+                liste_fus = liste_fus+liste1[k1:]  # on ajoute la fin de liste1
             else:
-                liste_fus=liste_fus+liste2[k2:] #on ajoute la fin de liste2
+                liste_fus = liste_fus+liste2[k2:]  # on ajoute la fin de liste2
             return liste_fus
-                
-        def tri_selon_attribut(liste : list, attribut: str, croissant=True):
+
+        def tri_selon_attribut(liste: list, attribut: str, croissant=True):
             """Tri des listes de tuiles selon attribut (en format str) (tri fusion)
             Croissant par défaut. Metttre croisant=False pour décroissant
             tri en place + renvoie la liste triée"""
-            if len(liste)<=1:
+            if len(liste) <= 1:
                 return liste
             else:
-                milieu=len(liste)//2
-                return fusion(tri_selon_attribut(liste[:milieu],attribut,croissant),
-                              tri_selon_attribut(liste[milieu:],attribut,croissant),
-                              attribut,croissant)
-            
-            for i in range(len(liste)):
-                terrainymini = liste[i].__dict__[attribut]
-                jmini = i
-                for j in range(i, len(liste)):
-                    if croissant:
-                        if liste[j].__dict__[attribut] < terrainymini:
-                            terrainymini = liste[j].__dict__[attribut]
-                            jmini = j
-                    else:
-                        if liste[j].__dict__[attribut] > terrainymini:
-                            terrainymini = liste[j].__dict__[attribut]
-                            jmini = j
-                liste[jmini], liste[i] = liste[i], liste[jmini]
-            return liste
+                milieu = len(liste)//2
+                return fusion(tri_selon_attribut(liste[:milieu], attribut, croissant),
+                              tri_selon_attribut(
+                                  liste[milieu:], attribut, croissant),
+                              attribut, croissant)
+
         #Tri selon ymax
-        tri_selon_attribut(self.tuiles, 'ymax', croissant=False)
+        self.tuiles=tri_selon_attribut(self.tuiles, 'ymax', croissant=False)
         #reperage des groupes de ymax + tri selon xmax
         ymax = self.tuiles[0].ymax
         ideb = 0
@@ -106,4 +92,3 @@ class JeuDeDonnees():
         ifin = len(self.tuiles)
         self.tuiles[ideb:ifin] = tri_selon_attribut(
             self.tuiles[ideb:ifin], 'xmax')
-

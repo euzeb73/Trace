@@ -115,12 +115,13 @@ class Zone():
         if len(liste_terrains) == 1:  # cas un seul morceau de tuile
             return liste_terrains[0]
         else:
+            epsilon=liste_terrains[0].cellsize #pour comparer des longueurs
             hmax = liste_terrains[0].ymax
             liste_lignes = []
             terrain_ligne = liste_terrains[0]
             for i in range(1, len(liste_terrains)):
                 terrain = liste_terrains[i]
-                if terrain.ymax == hmax: #Si on est toujours sur la même ligne
+                if abs(terrain.ymax - hmax) < epsilon: #Si on est toujours sur la même ligne
                     terrain_ligne = terrain_ligne.concatenate(
                         terrain, bordure='verticale')
                 else: #on change de ligne
