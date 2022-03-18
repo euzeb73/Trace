@@ -1,5 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
+
+
+def arreter(event):
+    
+    return
+
+next=Button('stop',arreter)
+
+class DraggablePoint:
+    def __init__(self,point):
+        self.point = point
+        self.canevas = self.point.figure.canevas
+
 
 class DraggableRectangle:
     def __init__(self, rect):
