@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import mayavi.mlab as ma
 from position import Angle, Position
+from math import ceil, floor, sqrt
 import glob
 
 
@@ -67,11 +68,33 @@ class Terrain():
         fig = plt.figure()
         axes = plt.axes(xlim=(self.xmin, self.xmax),
                         ylim=(self.ymin, self.ymax))
-        axes.imshow(self.array, aspect='auto', extent=(self.xmin, self.xmax, self.ymin, self.ymax), alpha=1,
+        
+        #Pour alléger la sélection après
+        #TODO Du coup faire une option qu'on active quand on l'appel depuis le selecteur
+        Nmax=500000
+        if self.array.size > Nmax:
+            step=round(sqrt(self.array.size/Nmax)) #on prend un point tout les step pour alléger
+            step=min(step,25) #Dans la limite d'un point sur 25
+            arraytoplot=self.array[::step,::step] #rmq peut enlever jusquà 25 m sur les bords
+        else:
+            arraytoplot=self.array        
+        axes.imshow(arraytoplot, aspect='auto', extent=(self.xmin, self.xmax, self.ymin, self.ymax), alpha=1,
                     zorder=0, origin='upper', cmap=cm.terrain)
         axes.axis('equal')
         axes.xaxis.set_ticklabels([])
         axes.yaxis.set_ticklabels([])
+
+        #une échelle
+        taillex=self.xmax-self.xmin
+        if taillex > 1000:
+            echelle=1000
+        elif  100 < taillex <= 1000:
+            echelle=100
+        else:
+            echelle=10
+
+        axes.hlines(self.ymin+0.95*(self.ymax-self.ymin),self.xmin+0.05*taillex,self.xmin+0.05*taillex+echelle,color='k')
+        axes.text(self.xmin+0.06*taillex,self.ymin+0.96*(self.ymax-self.ymin),'{}m'.format(echelle),color='k')
         if show:
             plt.show()
         return fig,axes

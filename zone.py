@@ -71,40 +71,6 @@ class Zone():
             else:
                 prendretuile=False
 
-            # if bordinf and bordsup and bordgauche and borddroit:  # zone dans tuile
-            #     tocrop=(self.xmin,self.xmax,self.ymin,self.ymax)
-            # elif bordsup and bordinf: #zone dans tuile en vert mais qui dépasse en horiz
-            #     tocrop=(terrain.xmin,terrain.xmax,self.ymin,self.ymax)
-            #     if bordgauche:
-            #         tocrop[0]=self.xmin
-            #     elif borddroit:
-            #         tocrop[1]=self.xmax
-            # elif bordgauche and borddroit: #zone dans tuile en horiz mais qui dépasse en vert
-            #     tocrop=(self.xmin,self.xmax,terrain.xmin,terrain.ymax)
-            #     if bordinf:
-            #         tocrop[0]=self.ymin
-            #     elif bordsup:
-            #         tocrop[1]=self.ymax
-            # elif bordsup and bordgauche:  # coin haut gauche
-            #     tocrop=(self.xmin,terrain.xmax,terrain.ymin,self.ymax)
-            # elif bordsup and milieuhoriz:  # bord supérieur, largeur entière
-            #     tocrop=(terrain.xmin,terrain.xmax,terrain.ymin,self.ymax)
-            # elif bordsup and borddroit:  # coin haut droit
-            #     tocrop=(terrain.xmin,self.xmax,terrain.ymin,self.ymax)
-            # elif milieuvert and bordgauche:  # bord gauche, hauteur entière
-            #     tocrop=(self.xmin,terrain.xmax,terrain.ymin,terrain.ymax)
-            # elif milieuvert and milieuhoriz:  # tuile entière
-            #     tocrop=(terrain.xmin,terrain.xmax,terrain.ymin,terrain.ymax) # c'est juste qu'il ne faut rien faire
-            # elif milieuvert and borddroit:  # bord droit, hauteur entière
-            #     tocrop=(terrain.xmin,self.xmax,terrain.ymin,terrain.ymax)
-            # elif bordinf and bordgauche:  # coin bas gauche
-            #     tocrop=(self.xmin,terrain.xmax,self.ymin,terrain.ymax)
-            # elif bordinf and milieuhoriz:  # bord inférieur, largeur entière
-            #     tocrop=(terrain.xmin,terrain.xmax,self.ymin,terrain.ymax)
-            # elif bordinf and borddroit:  # coin bas droite
-            #     tocrop=(terrain.xmin,self.xmax,self.ymin,terrain.ymax)
-            # else:
-            #     prendretuile = False #LA tuile ne contient pas de données de la zone
 
             if prendretuile:
                 terrain.loadasc(terrain.path)

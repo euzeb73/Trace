@@ -5,6 +5,8 @@ from zone import Zone
 import matplotlib.pyplot as plt
 from traces import Traces
 import time
+from selecteur import Selecteur
+
 # point=Position(47.565943,6.725231)
 # pttest=point.get_xy()
 # print(pttest)
@@ -44,7 +46,7 @@ print('Cartes lues et triées en {:.4f} s'.format((t2-t1)))
 xmin,ymax=Position(45.524444 , 6.756787).get_xy()
 xmax,ymin=Position(45.516221 , 6.779277).get_xy()
 bosse_etroit=Zone()
-bosse_etroit.set_rectangle(xmin,xmax,ymin,ymax)
+bosse_etroit.set_rectangle(xmin-2000,xmax+2000,ymin-2000,ymax+2000)
 t1=time.perf_counter()
 carte=bosse_etroit.generate_terrain(savoie)
 t2=time.perf_counter()
@@ -57,14 +59,15 @@ col_bosse=Position(45.521172 , 6.765767).get_xy()
 replat_chamois=Position(45.521462 , 6.772941).get_xy()
 avant_pleinest=Position(45.519639 , 6.773636).get_xy()
 
+Selecteur(carte)
 
-# trace=Traces(carte,[sortie_foret,replat_chamois,sommet_bosse],[])
-# trace=Traces(carte,[sortie_foret,sommet_bosse],[25])
-trace=Traces(carte,[sortie_foret,avant_pleinest,replat_chamois,sommet_bosse],[100,50,200])
-# trace=Traces(carte,[fin_descente,col_bosse],[])
-t1=time.perf_counter()
-trace.calculate_trace()
-t2=time.perf_counter()
-print('Trace calculée en {:.4f} s'.format((t2-t1)))
-fig,zfac=carte.plot3D(Zfactor=1,show=False)
-trace.plot3D(fig,zfac)
+# # trace=Traces(carte,[sortie_foret,replat_chamois,sommet_bosse],[])
+# # trace=Traces(carte,[sortie_foret,sommet_bosse],[25])
+# trace=Traces(carte,[sortie_foret,avant_pleinest,replat_chamois,sommet_bosse],[100,50,200])
+# # trace=Traces(carte,[fin_descente,col_bosse],[])
+# t1=time.perf_counter()
+# trace.calculate_trace()
+# t2=time.perf_counter()
+# print('Trace calculée en {:.4f} s'.format((t2-t1)))
+# fig,zfac=carte.plot3D(Zfactor=1,show=False)
+# trace.plot3D(fig,zfac)
