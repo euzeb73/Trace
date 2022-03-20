@@ -70,9 +70,11 @@ class Terrain():
         axes.imshow(self.array, aspect='auto', extent=(self.xmin, self.xmax, self.ymin, self.ymax), alpha=1,
                     zorder=0, origin='upper', cmap=cm.terrain)
         axes.axis('equal')
+        axes.xaxis.set_ticklabels([])
+        axes.yaxis.set_ticklabels([])
         if show:
             plt.show()
-        return fig
+        return fig,axes
 
     def plot3D(self, Zfactor=3, show=True):
         """le Zfactor, c'est pour mieux voir le relief

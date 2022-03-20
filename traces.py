@@ -1,7 +1,10 @@
+import time
+from rectgle import Rectgle
 from terrain import Terrain
 from queue import PriorityQueue
 import numpy as np
 import mayavi.mlab as ma
+import matplotlib.pyplot as plt
 from math import tan,sqrt
 
 RACINEDEDEUX=sqrt(2)
@@ -12,7 +15,13 @@ class Traces():
         points est une liste de (x,y) d'au moins 2 points (départ arrivée)
         largeurs est une liste de floats largeurs de longueur len(points)-1 qui représente
         la zone d'évolution autour de la droite (points[i] points[i+1]) soit
-        les 2 droites parallèles à -largeur[i]/2 et + largeur[i]/2"""
+        les 2 droites parallèles à -largeur[i]/2 et + largeur[i]/2
+        
+        
+        REpenser le truc à partir de liste de points et de rectangles ?
+        
+        
+        """
         self.terrain = terrain
         self.points = points
         if largeurs == [] :
@@ -23,49 +32,38 @@ class Traces():
         self.generate_rects()
         self.ImportanceDeniv=10
 
+    def set_rects(self,rectangles):
+        self.rects : list[Rectgle] = rectangles
+
     def generate_rects(self):
         """calcule les rectangles d'évolution de la trace
         il y en a len(self.points) -1 = len(largeurs)
         le self.rects[i] a la largeur self.largeur[i] et contient self.points[i] et self.points[i+1]
         le rectangle est donné par 3 de ses points A,B,D. C (non donné est tel que vec AC=vec AB+vec AD)
-        TODO ? une classe rectangle ?
+        on rajoute une marge en longueur de self.cellsize pour avoir l'arrivée tjs dans le rectangle 
+        même après approximation
         """
         self.rects = []
         for i in range(len(self.points)-1):
-            largeur=self.largeurs[i]
-            I=np.array(self.points[i]) #les milieux des côtés
-            J=np.array(self.points[i+1])
-            vecIJ=J-I
-            IJ=np.linalg.norm(vecIJ)
-            normalIJ=np.array((vecIJ[1],-vecIJ[0]))
-            vecIA=0.5*largeur*normalIJ/IJ
-            A=I+vecIA #vecteurs: OA=OI+IA
-            B=I-vecIA #vecteurs: OB=OI-IA
-            D=A+(IJ+self.terrain.cellsize)*vecIJ/IJ #vecteurs: OD=OA+IJ On ajoute une cellule dans cette direction pour avoir le point d'arrivée même avec les arrondis
-            self.rects.append((A,B,D))
-    # def bigger_rects(self):
-    #     """ Fonction pour agrandir un peu les rectangles et ne pas avoir de probleme d'arrondi
-    #      qui exclue le pt d'arrivée du rectangle"""
-    #     for rect in self.rects:
+            self.rects.append(Rectgle(self.points[i],self.points[i+1],self.largeurs[i],self.terrain.cellsize))
 
+    # def isinrect(self,x,y,rect : Rectgle):
+    #     """Retourne True si le points x,y est dans rect défini par les coordonnées de A,B et D
+    #     False sinon"""
+    #     A,B,D=rect.ABD
+    #     M=np.array((x,y))
+    #     vecAM=M-A
+    #     vecAB=B-A
+    #     AB=np.linalg.norm(vecAB)
+    #     vecAD=D-A
+    #     AD=np.linalg.norm(vecAD)
+    #     return 0<=vecAM.dot(vecAB)<=AB**2 and 0<=vecAM.dot(vecAD)<=AD**2
 
-    def isinrect(self,x,y,rect):
-        """Retourne True si le points x,y est dans rect défini par les coordonnées de A,B et D
-        False sinon"""
-        A,B,D=rect
-        M=np.array((x,y))
-        vecAM=M-A
-        vecAB=B-A
-        AB=np.linalg.norm(vecAB)
-        vecAD=D-A
-        AD=np.linalg.norm(vecAD)
-        return 0<=vecAM.dot(vecAB)<=AB**2 and 0<=vecAM.dot(vecAD)<=AD**2
-
-    def ijisinrect(self,i,j,rect):
+    def ijisinrect(self,i,j,rect : Rectgle):
         """Retourne True si le points i,j est dans rect défini par les coordonnées de A,B et D
         False sinon"""
         x,y=self.terrain.ijtoxy(i,j)
-        return self.isinrect(x,y,rect)
+        return rect.contains(x,y)
 
 
 
@@ -78,16 +76,18 @@ class Traces():
         # dans le calculateur, il faudrait tenir compte des largeurs avec une méthode qui 
         # élimine les points hors de ces largeurs (genr en les mettant float('inf') de le terrain
         test=5
-        if methode=='dijkstra_fast':
+        if methode=='Dijkstra':
             # calculateur=Dijkstra()
             pass
-        elif methode=='Astar':
+        elif methode=='A*':
             # calculateur=Astar()
             pass
         #calculateur.generate_chemin()
         #calculateur.get_path() ou plutot calculateur.get_pathxyz() avec path_toxyz à adapter
 
         #Version provisoire
+        print('Calcul de la Trace')
+        t1=time.perf_counter()
         for i in range(len(self.points)-1):
             depart=self.terrain.xyton(*self.points[i])
             arrivee=self.terrain.xyton(*self.points[i+1])
@@ -102,7 +102,8 @@ class Traces():
                 self.tracexyz=np.concatenate((oldx,x)),\
                               np.concatenate((oldy,y)),\
                               np.concatenate((oldz,z))
-
+        t2=time.perf_counter()
+        print('Calcul fini en {:.2f}s'.format(t2-t1) )
     def voisins(self,n):
         """renvoie une liste des voisins de n
         format liste de tuples (i,j)"""
@@ -212,5 +213,11 @@ class Traces():
         fin=len(x)-1
         ma.text3d(x[fin],y[fin],zplot[fin]+Zfactor*10,'Arrivee',figure=figure,scale=(20,20,20),color=(1,0,0))
         ma.show()
+
+    def plot2D(self,axes):
+        """affiche la trace sur la figure (2D)"""
+        x,y,z=self.tracexyz
+        axes.plot(x,y,color=(1,0,1))
+        # plt.show()
 
     #TODO AJOUTER une visu de Trace en 2D avc points et rectangles.

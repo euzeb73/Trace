@@ -44,7 +44,7 @@ class Rectgle(Rectangle):
 
         """
 
-    def isin(self,x,y):
+    def contains(self,x,y):
         """Retourne True si le points x,y est dans self
         False sinon"""
         A,B,D=self.ABD
