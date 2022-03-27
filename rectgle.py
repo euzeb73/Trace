@@ -28,7 +28,8 @@ class Rectgle(Rectangle):
         self.ABD=(A,B,D) #les coodonnées de A,B et D 
 
     def get_matplotlibrec(self):
-        """"""
+        """Renvoie les paramètres necessaires pur générer un rectangle de la classe 
+        Rectangle de matplotlib"""
         A,B,D=self.ABD
         xy=A   #coin A
         height=self.largeur # largeur de A à B
@@ -36,13 +37,6 @@ class Rectgle(Rectangle):
         width=np.linalg.norm(vecAD) #longueur AD
         angle=180*np.arctan2(vecAD[1],vecAD[0])/pi
         return xy,width,height,angle
-
-    def set_frommatplotlib(rec : Rectangle):
-        """pour importé un rectangle à partir d'un objet Rectangle de Matplotlib
-        
-        PAS UTILE ?
-
-        """
 
     def contains(self,x,y):
         """Retourne True si le points x,y est dans self

@@ -55,7 +55,8 @@ class Calculateur():
 
 
 class Dijkstra(Calculateur):
-    def __init__(self):
+    def __init__(self, depart, arrivee, rectangle: Rectgle, terrain: Terrain):
+        super().__init__(depart, arrivee, rectangle, terrain)
         self.ImportanceDeniv = 10
 
     def voisins_couts(self, n):
