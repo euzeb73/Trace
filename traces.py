@@ -67,7 +67,7 @@ class Traces():
 
 
 
-    def calculate_trace(self,methode='dijkstra_fast'):
+    def calculate_trace(self,methode='Dijkstra'):
         #Dans l'idée: calculer le chemin entre chaque points de la liste self.points
         #sous traiter ce calcul à une une calsse de calculateurs avec des héritages
         #genre class Calculateur(): (il faudra lui fournir le terrain pour les conversions)
@@ -75,7 +75,7 @@ class Traces():
         # et dans le calculateur une méthode .generate_path qui renvoie un chemin
         # dans le calculateur, il faudrait tenir compte des largeurs avec une méthode qui 
         # élimine les points hors de ces largeurs (genr en les mettant float('inf') de le terrain
-        test=5
+        self.methode=methode
         if methode=='Dijkstra':
             # calculateur=Dijkstra()
             pass
@@ -92,7 +92,7 @@ class Traces():
             depart=self.terrain.xyton(*self.points[i])
             arrivee=self.terrain.xyton(*self.points[i+1])
             self.current_rec=self.rects[i]
-            chemin=self.dijkstra_fast(depart,arrivee)[0]
+            chemin=self.dijkstra(depart,arrivee)[0]
             x,y,z=self.path_to_xyz(chemin)
             if i==0:
                 self.tracexyz=x,y,z
@@ -147,7 +147,7 @@ class Traces():
             voiscouts.append([self.terrain.ijton(*voisin),cout])
         return voiscouts
 
-    def dijkstra_fast(self,sommet_start,sommet_stop):
+    def dijkstra(self,sommet_start,sommet_stop):
         graph=self.terrain.array
         #Init de la file d'attente
         attente=PriorityQueue()
