@@ -1,3 +1,4 @@
+from calculateur import Astar
 from position import Angle,Position
 from terrain import Terrain
 from dataset import JeuDeDonnees
@@ -20,5 +21,6 @@ carte=large.generate_terrain(belfort)
 # trace=Traces(carte,[(carte.xmin+5,carte.ymin+5),(carte.xmax-5,carte.ymax-5)],[])
 trace=Traces(carte,[(carte.xmax-10,carte.ymax-10),(carte.xmin+10,carte.ymin+10)],[])
 trace.calculate_trace()
+# trace.calculate_trace('Astar')
 fig,Zfac=carte.plot3D(Zfactor=3, show= False)
 trace.plot3D(fig,Zfac)

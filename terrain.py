@@ -68,16 +68,18 @@ class Terrain():
         fig = plt.figure()
         axes = plt.axes(xlim=(self.xmin, self.xmax),
                         ylim=(self.ymin, self.ymax))
-        
+
         #Pour alléger la sélection après
         #TODO Du coup faire une option qu'on active quand on l'appel depuis le selecteur
-        Nmax=500000
+        Nmax = 500000
         if self.array.size > Nmax:
-            step=round(sqrt(self.array.size/Nmax)) #on prend un point tout les step pour alléger
-            step=min(step,25) #Dans la limite d'un point sur 25
-            arraytoplot=self.array[::step,::step] #rmq peut enlever jusquà 25 m sur les bords
+            # on prend un point tout les step pour alléger
+            step = round(sqrt(self.array.size/Nmax))
+            step = min(step, 25)  # Dans la limite d'un point sur 25
+            # rmq peut enlever jusquà 25 m sur les bords
+            arraytoplot = self.array[::step, ::step]
         else:
-            arraytoplot=self.array        
+            arraytoplot = self.array
         axes.imshow(arraytoplot, aspect='auto', extent=(self.xmin, self.xmax, self.ymin, self.ymax), alpha=1,
                     zorder=0, origin='upper', cmap=cm.terrain)
         axes.axis('equal')
@@ -85,19 +87,21 @@ class Terrain():
         axes.yaxis.set_ticklabels([])
 
         #une échelle
-        taillex=self.xmax-self.xmin
+        taillex = self.xmax-self.xmin
         if taillex > 1000:
-            echelle=1000
-        elif  100 < taillex <= 1000:
-            echelle=100
+            echelle = 1000
+        elif 100 < taillex <= 1000:
+            echelle = 100
         else:
-            echelle=10
+            echelle = 10
 
-        axes.hlines(self.ymin+0.95*(self.ymax-self.ymin),self.xmin+0.05*taillex,self.xmin+0.05*taillex+echelle,color='k')
-        axes.text(self.xmin+0.06*taillex,self.ymin+0.96*(self.ymax-self.ymin),'{}m'.format(echelle),color='k')
+        axes.hlines(self.ymin+0.95*(self.ymax-self.ymin), self.xmin +
+                    0.05*taillex, self.xmin+0.05*taillex+echelle, color='k')
+        axes.text(self.xmin+0.06*taillex, self.ymin+0.96 *
+                  (self.ymax-self.ymin), '{}m'.format(echelle), color='k')
         if show:
             plt.show()
-        return fig,axes
+        return fig, axes
 
     def plot3D(self, Zfactor=3, show=True):
         """le Zfactor, c'est pour mieux voir le relief
@@ -131,13 +135,13 @@ class Terrain():
     def xytoij(self, x, y):
         return self.ytoi(y), self.xtoj(x)
 
-    def ijton(self,i,j):
+    def ijton(self, i, j):
         return i*self.M+j
-    
+
     def xyton(self, x, y):
         """Renvoie la coordonnée n=i*M+j correspondant à la position x,y"""
         i, j = self.xytoij(x, y)
-        return self.ijton(i,j)
+        return self.ijton(i, j)
 
     def ntoij(self, n):
         """renvoie les coordonnées i,j correspondant à n=i*M+j"""
@@ -150,11 +154,11 @@ class Terrain():
         y = self.ymax-i*self.cellsize
         return x, y
 
-    def altipointxy(self,x,y):
+    def altipointxy(self, x, y):
         """renvoie l'altitude du point de coordonnées x,y"""
-        assert self.xmin<=x<=self.xmax and self.ymin<=y<=self.ymax #dans le terrain
-        i,j=self.xytoij(x,y)
-        return self.array[i,j]
+        assert self.xmin <= x <= self.xmax and self.ymin <= y <= self.ymax  # dans le terrain
+        i, j = self.xytoij(x, y)
+        return self.array[i, j]
 
     def isinTerrain(self, x, y):
         return self.xmin <= x <= self.xmax and self.ymin <= y <= self.ymax

@@ -1,5 +1,4 @@
 # from matplotlib.collections import PatchCollection
-from aiohttp import TraceRequestExceptionParams
 from matplotlib.patches import Rectangle
 from terrain import Terrain
 from traces import Traces
@@ -9,6 +8,8 @@ from matplotlib.widgets import Button, Slider, RadioButtons
 from rectgle import Rectgle
 from matplotlib.patches import Rectangle
 
+
+#TODO ajouter un choix carte ou Terrain pour le sélecteur (avec un radio boutton ?)
 
 class Selecteur():
     def __init__(self, terrain: Terrain) -> None:
@@ -37,7 +38,7 @@ class Selecteur():
         #Bouton choix de trace
         axechoix = self.figure.add_axes([0.05, 0.05, 0.12, 0.2])
         self.bouton_choix = RadioButtons(
-            axechoix, ['Djikstra', 'A*', 'montée'])
+            axechoix, ['Dijkstra', 'A*', 'montée'])
         #Bouton choix du rendu
         axechoixplot = self.figure.add_axes([0.1, 0.72, 0.07, 0.15])
         self.bouton_choix_plot = RadioButtons(axechoixplot, ['2D', '3D'])
@@ -142,11 +143,12 @@ class Selecteur():
             self.tracetoplot.set_rects(self.rectangles)
             self.tracetoplot.calculate_trace(self.bouton_choix.value_selected)
             self.calculated = True
-        if self.bouton_choix_plot.value_selected == '2D':
-            self.tracetoplot.plot2D(self.axes)
         else:
-            fig, zfact = self.terrain.plot3D(Zfactor=1, show=False)
-            self.tracetoplot.plot3D(fig, zfact)
+            if self.bouton_choix_plot.value_selected == '2D':
+                self.tracetoplot.plot2D(self.axes)
+            else:
+                fig, zfact = self.terrain.plot3D(Zfactor=1, show=False)
+                self.tracetoplot.plot3D(fig, zfact)
         # self.bouton_valider.active=True
         # self.axes.set_title('Vous pouver ajuster les points et les largeurs')
         # self.connect_part2()

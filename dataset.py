@@ -67,6 +67,9 @@ class JeuDeDonnees():
             """Tri des listes de tuiles selon attribut (en format str) (tri fusion)
             Croissant par défaut. Metttre croisant=False pour décroissant
             tri en place + renvoie la liste triée"""
+            
+            #TODO enlever le slicing our accélérer tri(liste,attribut,debut,fin,croissant)
+            
             if len(liste) <= 1:
                 return liste
             else:
