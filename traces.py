@@ -6,7 +6,7 @@ import numpy as np
 import mayavi.mlab as ma
 import matplotlib.pyplot as plt
 from math import tan, sqrt
-from calculateur import Astar, Calculateur, Dijkstra
+from calculateur import Astar, Calculateur, Dijkstra,Skieur
 
 RACINEDEDEUX = sqrt(2)
 
@@ -66,7 +66,7 @@ class Traces():
         # élimine les points hors de ces largeurs (genr en les mettant float('inf') de le terrain
         args = 0, 0, 0, 0
         # dictionnaire avec les calculateurs
-        calcdict = {'Dijkstra': Dijkstra, 'Astar': Astar, 'A*': Astar}
+        calcdict = {'Dijkstra': Dijkstra, 'Astar': Astar, 'A*': Astar, 'Skieur': Skieur}
         if methode not in calcdict:
             print('méthode de calcul non supportée méthode supportées:\n')
             print(calcdict.keys())

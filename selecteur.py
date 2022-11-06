@@ -38,7 +38,8 @@ class Selecteur():
         #Bouton choix de trace
         axechoix = self.figure.add_axes([0.05, 0.05, 0.12, 0.2])
         self.bouton_choix = RadioButtons(
-            axechoix, ['Dijkstra', 'A*', 'montée'])
+            axechoix, ['Dijkstra', 'A*', 'Skieur'])
+        self.bouton_choix.on_clicked(self.change_choice)
         #Bouton choix du rendu
         axechoixplot = self.figure.add_axes([0.1, 0.72, 0.07, 0.15])
         self.bouton_choix_plot = RadioButtons(axechoixplot, ['2D', '3D'])
@@ -47,8 +48,12 @@ class Selecteur():
         self.connect()
         plt.show()
 
+    def change_choice(self,val):
+        self.calculated = False
+
     def change_largeur(self, val):
         """ changer pour current rect"""
+        self.calculated = False
         if len(self.largeurs) > 0:
             self.largeurs[-1] = val
             self.rectangles[-1].remove()  # l'enlever du canvas
@@ -76,7 +81,7 @@ class Selecteur():
         self.part2 = False  # première partie de sélection des points
 
     def click(self, event):
-        print('click')
+        # print('click')
         x, y = event.xdata, event.ydata
         # si on clique en dehors
         if event.inaxes != self.axes or not self.terrain.isinTerrain(x, y):
@@ -120,6 +125,7 @@ class Selecteur():
         self.canvas.draw()
 
     def effacer(self, event):
+        self.calculated = False
         if len(self.points) > 0:  # au mloins un point
             self.points.pop()  # on l'enlève
             xpts = [point[0] for point in self.points]
@@ -143,12 +149,12 @@ class Selecteur():
             self.tracetoplot.set_rects(self.rectangles)
             self.tracetoplot.calculate_trace(self.bouton_choix.value_selected)
             self.calculated = True
+        if self.bouton_choix_plot.value_selected == '2D':
+            self.tracetoplot.plot2D(self.axes)
         else:
-            if self.bouton_choix_plot.value_selected == '2D':
-                self.tracetoplot.plot2D(self.axes)
-            else:
-                fig, zfact = self.terrain.plot3D(Zfactor=1, show=False)
-                self.tracetoplot.plot3D(fig, zfact)
+            fig, zfact = self.terrain.plot3D(Zfactor=1, show=False)
+            self.tracetoplot.plot3D(fig, zfact)
+        self.canvas.draw() #update
         # self.bouton_valider.active=True
         # self.axes.set_title('Vous pouver ajuster les points et les largeurs')
         # self.connect_part2()
