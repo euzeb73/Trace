@@ -14,7 +14,8 @@ class Rectgle(Rectangle):
         self.largeur = largeur
         self.marge = cellsize
         self.calc_coords()
-        super().__init__(*self.get_matplotlibrec())
+        xy, width, height, angle = self.get_matplotlibrec()
+        super().__init__(xy, width, height, angle = angle)
 
     def calc_coords(self):
         I = np.array(self.point1)  # les milieux des côtés

@@ -22,25 +22,7 @@ class JeuDeDonnees():
         Va récupérer toutes les tuiles et les ranger par y decroissants puis x croissants
         et les retourner dans une liste de Terrains (pour l'instant seulement onlyinfo)
         """
-        #fonction de tri
-        # def tri_selon_attribut(liste : list, attribut: str, croissant=True):
-        #     """Tri des listes de tuiles selon attribut (en format str) (tri par sélection simple)
-        #     Croissant par défaut. Metttre croisant=False pour décroissant
-        #     tri en place + renvoie la liste triée"""
-        #     for i in range(len(liste)):
-        #         terrainymini = liste[i].__dict__[attribut]
-        #         jmini = i
-        #         for j in range(i, len(liste)):
-        #             if croissant:
-        #                 if liste[j].__dict__[attribut] < terrainymini:
-        #                     terrainymini = liste[j].__dict__[attribut]
-        #                     jmini = j
-        #             else:
-        #                 if liste[j].__dict__[attribut] > terrainymini:
-        #                     terrainymini = liste[j].__dict__[attribut]
-        #                     jmini = j
-        #         liste[jmini], liste[i] = liste[i], liste[jmini]
-        #     return liste
+      
         def fusion(liste1, liste2, attribut, croissant):
             """fusionne liste1 et liste2 qui sont triées selon attribut par ordre
             croissant si croissant==True  decroissant sinon"""

@@ -13,7 +13,7 @@ from rectgle import Rectgle
 
 class Preselec():
     def __init__(self) -> None:
-        self.dataset = JeuDeDonnees('../Savoie/')
+        self.dataset = JeuDeDonnees('./data/Savoie/')
         self.reset(None)
 
         #TODO BOuton retour zoom arrière facile avec une liste de box
@@ -154,7 +154,7 @@ class Preselec():
             pixel_width = round(1024/ratio)
 
         rep = requests.get(
-            f'https://wxs.ign.fr/cartes/geoportail/r/wms?LAYERS=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&EXCEPTIONS=text/xml&FORMAT=image/jpeg&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&STYLES=&CRS=EPSG:2154&BBOX={xmin},{ymin},{xmax},{ymax}&WIDTH={pixel_width}&HEIGHT={pixel_height}')
+            f'https://data.geopf.fr/wms-r?LAYERS=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&EXCEPTIONS=text/xml&FORMAT=image/jpeg&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&STYLES=&CRS=EPSG:2154&BBOX={xmin},{ymin},{xmax},{ymax}&WIDTH={pixel_width}&HEIGHT={pixel_height}')
         if rep:
             return rep.content
         else:

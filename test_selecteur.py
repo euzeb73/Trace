@@ -16,7 +16,7 @@ from rectgle import Rectgle
 # plt.show()
 
 t1=time.perf_counter()
-belfort=JeuDeDonnees('../Belfort/')
+belfort=JeuDeDonnees('./data/Belfort/')
 t2=time.perf_counter()
 print('Cartes lues et triées en {:.4f} s'.format((t2-t1)))
 point=Position(47.75057 , 6.930424)

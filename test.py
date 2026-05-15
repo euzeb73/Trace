@@ -39,7 +39,7 @@ trace.plot3D(fig,Zfac)
 chalet=Position(45.524949 , 6.791012)
 
 t1=time.perf_counter()
-savoie=JeuDeDonnees('../Savoie/')
+savoie=JeuDeDonnees('./data/Savoie/')
 t2=time.perf_counter()
 print('Cartes lues et triées en {:.4f} s'.format((t2-t1)))
 #zone=Zone(chalet,deltax=4e3,deltay=4e3)

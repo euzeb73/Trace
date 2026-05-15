@@ -118,6 +118,8 @@ class Dijkstra(Calculateur):
         return 0
 
     def calcul_chemin(self, sommet_start, sommet_stop):
+        i_start,j_start = self.terrain.ntoij(sommet_start)
+        i_stop,j_stop = self.terrain.ntoij(sommet_stop)
         graph = self.terrain.array
         #Init de la file d'attente
         attente = PriorityQueue()
@@ -130,7 +132,9 @@ class Dijkstra(Calculateur):
         # table_dists[sommet_start]=0
         previous = dict()  # Un dictionnaire avec le sommet précédent pour reconstruire le chemin
         visite = []  # Liste pour tous les sommets visités
+        compteur = 0 # pour un affichage
         while table_dists[sommet_stop] == float('inf'):
+            compteur+=1
             # on récupère le sommet qui est prioritaire dans la file
             dist_sommet, sommet = attente.get()
             # Si le sommet n'a jamais été visité (normalement ne doit pas arriver mais à cause de la non suppression de la file ça arrive)
@@ -144,6 +148,14 @@ class Dijkstra(Calculateur):
                         table_dists[voisin] = dist_sommet + dist
                 visite.append(sommet)
                 dejavisite[sommet] = True
+            if compteur%10000 == 0: #pas trop souvent
+                i,j = self.terrain.ntoij(sommet)
+                if i_stop != i_start or j_start != j_stop:
+                    percent = round(100*sqrt((i_stop-i)**2+(j_stop-j)**2)/sqrt((i_stop-i_start)**2+(j_stop-j_start)**2))
+                else:
+                    percent = 100
+                print(f'Progression approximative {percent:02d} %',end ='\r') #TODO améliorer ça
+        print('') #quand le calcul est fini
         #Reconstruire le chemin avec les listes des précédents:
         chemin = []
         sommet = sommet_stop
@@ -153,55 +165,6 @@ class Dijkstra(Calculateur):
         chemin.append(sommet_start)
         chemin.reverse()  # pour le mettre dans l'ordre
         return chemin, visite, table_dists[sommet_stop]
-
-    """
-    def calcul_chemin(self, sommet_start, sommet_stop):
-        graph = self.terrain.array
-        #Init de la file d'attente
-        attente = PriorityQueue()
-        attente.put((0, sommet_start))
-        #couplée avec une table des valeurs pour connaitre les valeurs des voisins
-        attenteval = {}
-        attenteval[sommet_start] = 0
-        #Table des distances
-        Ndeux = graph.shape[0]*graph.shape[1]
-        table_dists = [float('inf') for i in range(Ndeux)]
-        # table_dists[sommet_start]=0
-        previous = dict()  # Un dictionnaire avec le sommet précédent pour reconstruire le chemin
-        visite = []  # Liste pour tous les sommets visités
-        while table_dists[sommet_stop] == float('inf'):
-            # on récupère le sommet qui est prioritaire dans la file
-            dist_sommet, sommet = attente.get()
-            # Si le sommet n'a jamais été visité (normalement ne doit pas arriver mais à cause de la non suppression de la file ça arrive)
-            if table_dists[sommet] == float('inf'):
-                for voisin, dist in self.voisins_couts(sommet):
-                    # Si on n'a pas encore visité le voisin
-                    if table_dists[voisin] == float('inf'):
-                        if voisin not in attenteval.keys():  # Voisin pas encore en attente de visite
-                            attenteval[voisin] = dist_sommet + \
-                                dist  # on donne la valeur
-                            attente.put((dist_sommet+dist+self.heuristique(voisin), voisin))
-                            # Et on change de prédécesseur
-                            previous[voisin] = sommet
-                        elif dist_sommet+dist < attenteval[voisin]:
-                            # on remplace si c'est plus court
-                            attenteval[voisin] = dist_sommet+dist
-                            attente.put((dist_sommet+dist+self.heuristique(voisin), voisin))
-                            # Et on change de prédécesseur
-                            previous[voisin] = sommet
-                table_dists[sommet] = dist_sommet  # le sommet qui a été choisi
-                # del(attenteval[sommet])
-                visite.append(sommet)
-        #Reconstruire le chemin avec les listes des précédents:
-        chemin = []
-        sommet = sommet_stop
-        while sommet != sommet_start:
-            chemin.append(sommet)
-            sommet = previous[sommet]
-        chemin.append(sommet_start)
-        chemin.reverse()  # pour le mettre dans l'ordre
-        return chemin, visite, table_dists[sommet_stop]
-    """
 
     def calculate_path(self):
         chemin = self.calcul_chemin(self.departn, self.arriveen)[0]
@@ -231,13 +194,6 @@ class Astar(Dijkstra):
         # return 50*self.distance_eucl(i, j, iarriv, jarriv) / \
         #     self.distance_eucl(idep, jdep, iarriv, jarriv)
         return self.distance_eucl(i, j, iarriv, jarriv)
-    '''
-    def horiz_penalty(self, i, j, ivois=None, jvois=None):
-        """renvoie la pénalitée de distance  correspondant à la distance à l'arrivé
-        à vol d'oiseau qui s'ajoutera au dénivelé pour le cout du sommet"""
-        iarriv, jarriv = self.terrain.ntoij(self.arriveen)
-        return self.distance_eucl(ivois, jvois, iarriv, jarriv)
-    '''
 
 
 class Skieur(Calculateur):
@@ -252,7 +208,8 @@ class Skieur(Calculateur):
         # on calcule la direction de la trace sur cette échelle (en nb de cellsize)
         self.dmoy = 10
         self.angle = 45  # 0° on monte droit dans la pente, 90° on se déplace sur ligne de niveau
-        self.pentemax = 5 * pi/180 #Pente max tolérée par le skieur
+        self.pentemax = 20 * pi/180 #Pente max tolérée par le skieur
+        self.pentes = [0] # liste des pentes rencontrées utile pour touver une pente au bord de la carte
 
     def calc_next_step(self, i, j):
         """renvoie le prochain i,j"""
@@ -271,7 +228,8 @@ class Skieur(Calculateur):
         
         taille_deplacement=self.dmoy*self.terrain.cellsize
         
-        toutdroit=self.direction_but(i,j)*taille_deplacement
+        direction_arrivee = self.direction_but(i,j)
+        toutdroit=direction_arrivee/np.linalg.norm(direction_arrivee)*taille_deplacement
         pente_toutdroit=self.pente_direction(i,j,toutdroit)
         if pente_toutdroit<self.pentemax: #pas raide
             direction = toutdroit
@@ -279,20 +237,23 @@ class Skieur(Calculateur):
             #aller vers le haut avec
             # un angle constant par rapport à la 
             # ligne de niveau (perpendiculaire au gradient)
+            print(f'Pente en deg {pente_toutdroit*180/pi:f} ')
             grad=self.gradient(i,j)
             direction_plusgdpente=taille_deplacement* grad/np.linalg.norm(grad) #pas utile ?
             angle_plusdgpente = np.arctan2(direction_plusgdpente[1], direction_plusgdpente[0])
             angle_ligneniveau = angle_plusdgpente - pi/2 
 
             #Recherche de l'angle/direction pour avoir self.pentemax comme pente
+            #TODO ça ne fonctionne pas regarder les vecteurs, faire une autre méthode.
             theta=angle_ligneniveau
-            N=1000 #pas de la recherche
+            N=10000 #pas de la recherche
             dtheta=(angle_plusdgpente-angle_ligneniveau)/N
             pente=0
             while pente<=self.pentemax:
                 theta+=dtheta
                 direction=taille_deplacement*np.array([cos(theta),sin(theta)])
                 pente=self.pente_direction(i,j,direction)
+            print(f'Pente ajustée en deg {pente*180/pi:f} ')  
             
         #DEbug:
         # print(
@@ -307,18 +268,22 @@ class Skieur(Calculateur):
         """
         x,y=self.terrain.ijtoxy(i,j)
 
-        # TODO Tester si on est encore dans le terrain avec déplacement de direction.
-        # Si non alors on renvoie un valeur spéciale
-
+        #Tester si on est encore dans le terrain avec déplacement de direction.
+        # Si non alors on renvoie la dernière pente
+        if not self.terrain.isinTerrain(x+direction[0],y+direction[1]):
+            return self.pentes[-1]
         inext,jnext=self.terrain.xytoij(x+direction[0],y+direction[1])
         di,dj=inext-i,jnext-j
         diffalt=(self.terrain.array[i+di,j+dj]-self.terrain.array[i,j])
         disthoriz=np.linalg.norm(direction)
-        return np.arctan2(diffalt, disthoriz)
+        pente = np.arctan2(diffalt, disthoriz)
+        self.pentes.append(pente)
+        return pente
 
-    def convertion(self):
+    def conversion(self):
         """changement de direction"""
         self.angle = -self.angle
+        print('Conversion')
 
     def calculate_path(self) -> Tuple[list]:
         position = self.terrain.xytoij(*self.depart)
@@ -328,23 +293,32 @@ class Skieur(Calculateur):
         #Debug
         maxturn = 10000
         turn = 0
-        for i in range(10):  # on verra
-            while self.ijisinrect(*next_pos) and self.terrain.isinTerrain(xnext, ynext) and turn < maxturn:
-                position = next_pos
-                chemin.append(self.terrain.ijton(*position))
-                next_pos = self.calc_next_step(*position)
-                xnext, ynext = self.terrain.ijtoxy(*next_pos)
-                turn += 1
-            self.convertion()
+        # for i in range(10):  # on verra
+        #     while self.ijisinrect(*next_pos) and self.terrain.isinTerrain(xnext, ynext) and turn < maxturn:
+        #         position = next_pos
+        #         chemin.append(self.terrain.ijton(*position))
+        #         next_pos = self.calc_next_step(*position)
+        #         xnext, ynext = self.terrain.ijtoxy(*next_pos)
+        #         turn += 1
+        #     self.conversion()
+        #     next_pos = self.calc_next_step(*position)
+        #     xnext, ynext = self.terrain.ijtoxy(*next_pos)
+        while np.linalg.norm(self.direction_but(*next_pos))>1 and\
+              self.ijisinrect(*next_pos) and\
+              self.terrain.isinTerrain(xnext, ynext) and\
+              turn < maxturn: # inutile
+            position = next_pos
+            chemin.append(self.terrain.ijton(*position))
             next_pos = self.calc_next_step(*position)
             xnext, ynext = self.terrain.ijtoxy(*next_pos)
+            turn += 1
         return self.path_to_xyz(chemin)
 
     def direction_but(self, i, j):
         x, y = self.terrain.ijtoxy(i, j)
         position = np.array([x, y])
         vecteur = self.arrivee-position
-        return (self.arrivee-position)/np.linalg.norm(vecteur)
+        return self.arrivee-position
 
     def terrain_autour(self, i, j, taille=5):
         """renvoie un array contenant les altitudes autour de x,y

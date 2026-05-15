@@ -75,6 +75,7 @@ class Traces():
         print('Calcul de la Trace')
         t1 = time.perf_counter()
         for i in range(len(self.points)-1):
+            print(f'Partie {i+1}/{len(self.points)-1}')
             depart = self.points[i]
             arrivee = self.points[i+1]
             rectangle = self.rects[i]
